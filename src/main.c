@@ -15,7 +15,8 @@ char *get_file(char *file)
     if (size == -1)
         close(fd), error(strerror(errno));
     lseek(fd, 0, SEEK_SET);
-    char *content = (char *)malloc(sizeof(char) * size);
+    char *content = (char *)malloc(sizeof(char) * (size + 1));
+    content[size] = '\0';
     if (!content)
         close(fd), error(strerror(errno));
     if (read(fd, content, size) == -1)
@@ -26,20 +27,18 @@ char *get_file(char *file)
 
 int check_elf(char *c)
 {
-    printf("%s/n", c);
     if (c[0] == (char)127 && c[1] == 'E' && c[2] == 'L' && c[3] == 'F' && c[4] == 2)
         return (0);
     return (1);
 }
 
-void exec(char *file)
-{
-    int fd = open(file, O_RDONLY);
-    if (fd == -1)
-        error(strerror(errno));
-    
-    int new = open("woody", O_RDWR | O_CREAT);
+void create_new(char *s)
+{   
+    (void) s;
+    int new = open("woody", O_CREAT | O_TRUNC | O_RDWR, 0777);
     if (new == -1)
+        error(strerror(errno));
+    if (write(new, s, strlen(s)) == -1)
         error(strerror(errno));
 }
 
@@ -50,6 +49,7 @@ int main(int ac, char **av)
     char *c = get_file(av[1]);
     if (check_elf(c))
         error("File architecture not suported. x86_64 only");
-    exec(av[1]);
+    c = encryption(c);
+    create_new(c);
     return 0;
 }

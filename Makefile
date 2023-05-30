@@ -1,23 +1,23 @@
 NAME= woody_woodpacker
+FNAME=woody
 
 CFLAGS=-Wall -Wextra -Werror
-SRCS= main.c 
+SRCS= src/main.c src/encrypt.c 
 
 OBJ=$(SRCS:.c=.o)
-OBJS=$(addprefix bin/, $(OBJ))
 
 all:$(NAME)
 
 %.o: %.c
-	gcc $(CFLAGS) -c $< -o $(addprefix bin/, $@)
+	gcc $(CFLAGS) -c $< -o $@
 
 $(NAME):$(OBJ)
-	gcc $(CFLAGS) $(OBJS) -o $(NAME)
+	gcc $(CFLAGS) $(OBJ) -o $(NAME)
 
 clean:
-	rm -f $(OBJS)
+	rm -f $(OBJ)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(NAME) $(FNAME)
 
 re: fclean all
