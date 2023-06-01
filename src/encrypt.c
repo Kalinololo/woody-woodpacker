@@ -24,24 +24,16 @@ char *generate_key()
     return key;
 }
 
-char *encryption(char *text)
+void    encryption(woody *w)
 {
-    printf("%s\n", text);
     char *key = generate_key();
     char *ckey = key;
-    char *new = strdup(text);
-    //free(text);
-    if (!new)
-        error(strerror(errno));
-    int i = 0;
-    while (new[i])
+    size_t i = 0;
+    while (i < w->text.sh_size)
     {
         if (!*key)
             key = ckey;
-        new[i] ^= *(key++);
+        *(w->file + w->text.sh_offset + i) ^= *(key++);
         i++;
     }
-    printf("%s\n", new);
-    //free(key);
-    return new;
 }
