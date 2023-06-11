@@ -29,35 +29,16 @@ char *generate_key()
     return key;
 }
 
-woody    encryption(woody w)
+void    encryption(woody *w)
 {
     char *key = generate_key();
     char *ckey = key;
     size_t i = 0;
-    while (i < w.text->sh_size)
+    while (i < w->text->sh_size)
     {
         if (!*key)
             key = ckey;
-        *(w.file + w.text->sh_offset + i) ^= *(key++);
+        *(w->file + w->text->sh_offset + i) ^= *(key++);
         i++;
     }
-    return (w);
-}
-
-woody   inject(woody w)
-{
-    //woody p;
-    //p.file = map_file(PAYLOAD, &p.size);
-    //p = parse_elf(p);
-    printf("%s\n", PAYLOAD);
-    int size = sizeof(PAYLOAD);
-    int i = 0;
-    while (i < size)
-    {
-        *(w.file + w.text->sh_offset + i) =  PAYLOAD[i];
-        i++;
-    }
-    w.header->e_entry = w.text->sh_addr;
-    w.text->sh_size = size;
-    return (w);
 }

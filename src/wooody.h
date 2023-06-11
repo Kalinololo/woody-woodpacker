@@ -19,15 +19,17 @@ typedef struct s_woody
     int         size;
     Elf64_Ehdr  *header;
     Elf64_Shdr  *text;
+	Elf64_Phdr  *load;
+    int         new;
 }               woody;
 
-
-woody		encryption(woody w);
+void		encryption(woody *w);
 char        *map_file(char *file, int *size);
 void		error(char *s);
-woody		inject(woody w);
-woody		parse_elf(woody w);
+void		inject(woody *w);
+void		parse_elf(woody *w);
 int			check_elf(char *c);
 Elf64_Shdr	*get_elf_section(char *file, char *seg);
+Elf64_Phdr	*get_load_segment(char *file);
 
 #endif

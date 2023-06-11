@@ -13,7 +13,10 @@ void create_new(woody w)
         error(strerror(errno));
     if (write(new, w.file, w.size) == -1)
         error(strerror(errno));
-    munmap(w.file, w.size);
+    if (new)
+        free(w.file);
+    else
+        munmap(w.file, w.size);
 }
 
 int main(int ac, char **av)
@@ -21,10 +24,11 @@ int main(int ac, char **av)
     if (ac != 2)
         error("Usage : ./woody_woodpacker [FILE]");
     woody w;
+    w.new = 0;
     w.file = map_file(av[1], &w.size);
-    w = parse_elf(w);
-    //w = encryption(w);
-    w = inject(w);
+    parse_elf(&w);
+    //encryption(w);
+    inject(&w);
     create_new(w);
     return 0;
 }

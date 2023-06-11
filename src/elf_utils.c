@@ -14,13 +14,40 @@ Elf64_Shdr   *get_elf_section(char *file, char *seg)
     return NULL;
 }
 
-woody parse_elf(woody w)
+int check_load_seg(Elf64_Ehdr *header, Elf64_Phdr *seg, int i)
 {
-    if (check_elf(w.file))
+    if (i >= header->e_phnum || seg == NULL || seg->p_type != PT_LOAD)
+        return (1);
+    return (0);
+}
+
+Elf64_Phdr   *get_load_segment(char *file)
+{
+    Elf64_Ehdr *header = (Elf64_Ehdr *) file;
+    int i, j;
+    Elf64_Phdr *seg = (Elf64_Phdr *) (file + header->e_phoff);
+
+    i = -1;
+    while (++i < header->e_phnum)
+        if (seg[i].p_type == PT_LOAD)
+            break ;
+    j = i;
+    while (++j < header->e_phnum)
+        if (seg[j].p_type == PT_LOAD)
+            break ;
+    if (check_load_seg(header, &seg[i], i) || check_load_seg(header, &seg[j], j))
+        error("ELF Format error (PT_LOAD segments missing)");
+    if ((unsigned long)(seg[j].p_offset - (seg[i].p_offset + seg[i].p_filesz)) < sizeof(PAYLOAD) - 1)
+        return (NULL);
+    return &seg[i];
+}
+
+void parse_elf(woody* w)
+{
+    if (check_elf(w->file))
         error("File architecture not suported. x86_64 only");
-    w.header = (Elf64_Ehdr *) w.file;
-    w.text = get_elf_section(w.file, ".text");
-    return w;
+    w->header = (Elf64_Ehdr *) w->file;
+    w->text = get_elf_section(w->file, ".text");
 }
 
 int check_elf(char *c)

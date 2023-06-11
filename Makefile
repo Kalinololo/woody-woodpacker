@@ -5,7 +5,7 @@ DNAME=src/payload/decrypt
 
 CFLAGS=-Wall -Wextra -Werror
 
-SRCS= src/main.c src/encrypt.c src/elf_utils.c src/utils.c
+SRCS= src/main.c src/encrypt.c src/elf_utils.c src/utils.c src/inject.c
 
 OBJ=$(SRCS:.c=.o)
 
