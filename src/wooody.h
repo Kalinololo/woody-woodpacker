@@ -1,3 +1,6 @@
+#ifndef WOODY_H
+# define WOODY_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -15,11 +18,16 @@ typedef struct s_woody
     char        *file;
     int         size;
     Elf64_Ehdr  *header;
-    Elf64_Shdr  *sects;
-    Elf64_Shdr  text;
-    char        *shstrtab;
+    Elf64_Shdr  *text;
 }               woody;
 
 
-void    encryption(woody *w);
-void    error(char *s);
+woody		encryption(woody w);
+char        *map_file(char *file, int *size);
+void		error(char *s);
+woody		inject(woody w);
+woody		parse_elf(woody w);
+int			check_elf(char *c);
+Elf64_Shdr	*get_elf_section(char *file, char *seg);
+
+#endif

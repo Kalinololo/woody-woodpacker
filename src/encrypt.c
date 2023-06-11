@@ -1,5 +1,6 @@
 #include "wooody.h"
 
+char encryption_key[KEY_SIZE + 1];
 
 char *generate_key()
 {
@@ -11,29 +12,52 @@ char *generate_key()
     if (!key)
         close(fd), error(strerror(errno));
     key[KEY_SIZE] = '\0';
+    encryption_key[KEY_SIZE] = '\0';
     int i = 0;
     while (i < KEY_SIZE)
     {
         if (read(fd, key + i, 1) == -1)
             close(fd), error(strerror(errno));
         if ((key[i] > '0' && key[i] < '9') || (key[i] > 'a' && key[i] < 'z') || (key[i] > 'A' && key[i] < 'Z'))
+        {
+            encryption_key[i] = *(key + i);
             i++;
+        }
     }
     printf("Key : %s\n", key);
     close(fd);
     return key;
 }
 
-void    encryption(woody *w)
+woody    encryption(woody w)
 {
     char *key = generate_key();
     char *ckey = key;
     size_t i = 0;
-    while (i < w->text.sh_size)
+    while (i < w.text->sh_size)
     {
         if (!*key)
             key = ckey;
-        *(w->file + w->text.sh_offset + i) ^= *(key++);
+        *(w.file + w.text->sh_offset + i) ^= *(key++);
         i++;
     }
+    return (w);
+}
+
+woody   inject(woody w)
+{
+    //woody p;
+    //p.file = map_file(PAYLOAD, &p.size);
+    //p = parse_elf(p);
+    printf("%s\n", PAYLOAD);
+    int size = sizeof(PAYLOAD);
+    int i = 0;
+    while (i < size)
+    {
+        *(w.file + w.text->sh_offset + i) =  PAYLOAD[i];
+        i++;
+    }
+    w.header->e_entry = w.text->sh_addr;
+    w.text->sh_size = size;
+    return (w);
 }
