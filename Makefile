@@ -6,21 +6,27 @@ DNAME=src/payload/decrypt
 CFLAGS=-Wall -Wextra -Werror
 
 SRCS= src/main.c src/encrypt.c src/elf_utils.c src/utils.c src/inject.c
+ASRC=src/payload.s
 
 OBJ=$(SRCS:.c=.o)
+AOBJ=$(ASRC:.s=.o)
 
 all:$(NAME)
 
-%.o: %.c
-	gcc $(CFLAGS) -c $< -o $@ -DPAYLOAD=\"`/usr/bin/hexdump -v -e '"\\\x" 1/1 "%02x"' src/payload.o`\"
+%.o: %.s
+	nasm -f elf64 $< -o $@
 
-$(NAME):$(OBJ)
+%.o: %.c
+	gcc $(CFLAGS) -c $< -o $@
+
+$(NAME):$(OBJ) $(AOBJ)
+	ld -o src/payload src/payload.o
 	gcc $(CFLAGS) $(OBJ) -o $(NAME)
 
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(AOBJ)
 
 fclean: clean
-	rm -f $(NAME) $(FNAME)
+	rm -f $(NAME) $(FNAME) src/payload
 
 re: fclean all

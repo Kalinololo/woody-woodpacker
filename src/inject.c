@@ -1,4 +1,4 @@
-#include "wooody.h"
+ #include "wooody.h"
 
 void    ft_memcpy(void *dst, void *src, int size)
 {
@@ -12,37 +12,67 @@ void    ft_memcpy(void *dst, void *src, int size)
     }
 }
 
+void    ft_memset(void *dst, int value, int size)
+{
+    int i = 0;
+    char *d = (char *) dst;
+    while (i < size)
+    {
+        *(d + i) = value;
+        i++;
+    }
+}
+
+
+void patch(void *file, int size, long e)
+{
+    int i;
+    long val;
+    unsigned char *f = (unsigned char *) file;
+
+    i = 0;
+    while (i < size)
+    {
+        val = *((long*) (f + i));
+        if (((int) val ^ (int) 0x11111111) == 0)
+        {
+            *((long*) (f + i)) = e;
+            printf("Ap : %ld\n", *((long*) (f + i)));
+            return ;
+        }
+        i++;
+    }
+    error("Error patching entrypoint");
+}
+
 void    enlarge_load_size(woody *w)
 {
-    size_t s = sizeof(PAYLOAD) - 1;
+    size_t s = w->psize;
     char *new = malloc(w->size + s);
     Elf64_Phdr *ph = (Elf64_Phdr *) (w->file + w->header->e_phoff);
     Elf64_Shdr *sh = (Elf64_Shdr *) (w->file + w->header->e_shoff);
-    int i = 0;
+    int i;
 
-    while (i < w->header->e_phnum)
-        if (ph[i++].p_type == PT_LOAD)
-            break ;
+    //Add s to the Phdr offset after our codecave
+    i = w->load_index + 1;
     while (i < w->header->e_phnum)
         ph[i++].p_offset += s;
-    i = -1;
-    write(1, "1", 1);
-    while (++i < w->header->e_shnum)
-        if (sh[i].sh_offset > w->load->p_offset + w->load->p_filesz)
+    //Add s to the Shdr offset after our codecave
+    i = 0;
+    while (i < w->header->e_shnum)
+        if (sh[i++].sh_offset > w->load->p_offset + w->load->p_filesz)
             break ;
-    write(1, "1", 1);
     while (i < w->header->e_shnum)
         sh[i++].sh_offset += s;
+    //Add s to the header offset
     if (w->header->e_phoff > w->load->p_offset + w->load->p_filesz)
         w->header->e_phoff += s;
     if (w->header->e_shoff > w->load->p_offset + w->load->p_filesz)
         w->header->e_shoff += s;
-    write(1, "1", 1);
+    //Copy the orignal file with the codecave
     ft_memcpy(new, w->file, w->load->p_offset + w->load->p_filesz);
-    ft_memcpy(new + w->load->p_offset + w->load->p_filesz, PAYLOAD, s);
+    ft_memset(new + w->load->p_offset + w->load->p_filesz, 0, s);
     ft_memcpy(new + w->load->p_offset + w->load->p_filesz + s, w->file + w->load->p_offset + w->load->p_filesz, w->size - (w->load->p_offset + w->load->p_filesz));
-    w->load->p_memsz += s;
-    w->load->p_filesz += s;
     munmap(w->file, w->size);
     w->file = new;
     w->size += s;
@@ -50,23 +80,29 @@ void    enlarge_load_size(woody *w)
 
 int    check_space(woody *w)
 {
-    w->load = get_load_segment(w->file);
-    if (w->load != NULL)
+    int     space = 0;
+    w->load_index = 0;
+    w->load = get_load_segment(w, &space);
+    if (w->load == NULL)
+        error("Wrong ELF format.");
+    if (space)
         return (0);
+    write(1, "1", 1);
     enlarge_load_size(w);
-    return (1);
+    parse_elf(w);
+    return (1 + check_space(w));
 }
 
 void   inject(woody *w)
 {
-    char p[] = PAYLOAD;
-    size_t s = sizeof(PAYLOAD) - 1;
-    if (check_space(w))
-        return ;
+    //long e = w->header->e_entry;
+    w->psize = w->p->text->sh_size;
+    //patch(w->p->file, w->psize, e);
+    w->new = check_space(w);
     Elf64_Off injection_offset = (w->load->p_offset + w->load->p_filesz);
 
-    ft_memcpy(w->file + injection_offset, p, s);
+    ft_memcpy(w->file + injection_offset, w->p->file + w->p->text->sh_offset, w->psize);
     w->header->e_entry = (w->load->p_vaddr + w->load->p_filesz);
-    w->load->p_memsz += s;
-    w->load->p_filesz += s;
+    w->load->p_filesz += w->psize;
+    w->load->p_memsz += w->psize;
 }

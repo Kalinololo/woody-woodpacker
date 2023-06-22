@@ -1,15 +1,39 @@
 section .text
-    global _start
+        global _start
+
 _start:
-    mov edx,len
-    mov ecx,msg
-    mov ebx,1
-    mov eax,4
-    int 0x80
+        mov rax, 1
+        mov rdi, 1
+        lea rsi, [rel woody]
+        mov rdx, woody_len
+        syscall
+        xor rcx, rcx
+        mov rdi, [rel key]
+        mov rax, [rel text]
+        mov rsi, [rel tsize]
+        jmp decrypt
 
-    mov eax,1
-    int 0x80
+decrypt:
+        cmp rdi, 0
+        je reset_key
+        mov al, BYTE [rdi]
+        xor BYTE [rax + rcx], al
+        inc rcx
+        inc rdi
+        cmp rcx, rsi
+        jb decrypt
+        mov rax, [rel text]
+        jmp rax
 
-section	.data
-msg db 'Hello, world!', 0xa  
-len equ $ - msg
+reset_key:
+        mov rdi, [rel key]
+        jmp decrypt
+
+end:
+
+
+        woody           db '....WOODY....',0x0a,0
+	woody_len       equ $ - woody
+        key             dq 0x9999999999999999
+        text            dq 0xAAAAAAAAAAAAAAAA
+        tsize           dq 0xBBBBBBBBBBBBBBBB

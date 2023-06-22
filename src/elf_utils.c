@@ -16,30 +16,29 @@ Elf64_Shdr   *get_elf_section(char *file, char *seg)
 
 int check_load_seg(Elf64_Ehdr *header, Elf64_Phdr *seg, int i)
 {
-    if (i >= header->e_phnum || seg == NULL || seg->p_type != PT_LOAD)
+    if (i > header->e_phnum || seg == NULL || seg->p_type != PT_LOAD)
         return (1);
     return (0);
 }
 
-Elf64_Phdr   *get_load_segment(char *file)
+Elf64_Phdr   *get_load_segment(woody *w, int *space)
 {
-    Elf64_Ehdr *header = (Elf64_Ehdr *) file;
-    int i, j;
-    Elf64_Phdr *seg = (Elf64_Phdr *) (file + header->e_phoff);
+    Elf64_Ehdr *header = (Elf64_Ehdr *) w->file;
+    int i;
+    Elf64_Phdr *seg = (Elf64_Phdr *) (w->file + header->e_phoff);
+    Elf64_Phdr *first = NULL;
 
     i = -1;
     while (++i < header->e_phnum)
-        if (seg[i].p_type == PT_LOAD)
+        if (seg[i].p_type == PT_LOAD && (seg[i].p_flags & PF_X))
             break ;
-    j = i;
-    while (++j < header->e_phnum)
-        if (seg[j].p_type == PT_LOAD)
-            break ;
-    if (check_load_seg(header, &seg[i], i) || check_load_seg(header, &seg[j], j))
-        error("ELF Format error (PT_LOAD segments missing)");
-    if ((unsigned long)(seg[j].p_offset - (seg[i].p_offset + seg[i].p_filesz)) < sizeof(PAYLOAD) - 1)
+    first = &seg[i];
+    if (check_load_seg(header, first, i) || check_load_seg(header, first + 1, i + 1))
         return (NULL);
-    return &seg[i];
+    w->load_index = i;
+    if (seg[i + 1].p_offset - (seg[i].p_offset + seg[i].p_filesz) >= w->psize)
+        *space = 1;
+    return first;
 }
 
 void parse_elf(woody* w)
