@@ -23,28 +23,6 @@ void    ft_memset(void *dst, int value, int size)
     }
 }
 
-
-void patch(void *file, int size, long e)
-{
-    int i;
-    long val;
-    unsigned char *f = (unsigned char *) file;
-
-    i = 0;
-    while (i < size)
-    {
-        val = *((long*) (f + i));
-        if (((int) val ^ (int) 0x11111111) == 0)
-        {
-            *((long*) (f + i)) = e;
-            printf("Ap : %ld\n", *((long*) (f + i)));
-            return ;
-        }
-        i++;
-    }
-    error("Error patching entrypoint");
-}
-
 void    enlarge_load_size(woody *w)
 {
     size_t s = w->psize;
@@ -95,9 +73,7 @@ int    check_space(woody *w)
 
 void   inject(woody *w)
 {
-    //long e = w->header->e_entry;
     w->psize = w->p->text->sh_size;
-    //patch(w->p->file, w->psize, e);
     w->new = check_space(w);
     Elf64_Off injection_offset = (w->load->p_offset + w->load->p_filesz);
 

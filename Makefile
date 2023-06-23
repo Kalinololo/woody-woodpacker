@@ -20,8 +20,8 @@ all:$(NAME)
 	gcc $(CFLAGS) -c $< -o $@
 
 $(NAME):$(OBJ) $(AOBJ)
-	ld -o src/payload src/payload.o
-	gcc $(CFLAGS) $(OBJ) -o $(NAME)
+	ld -o src/payload $(AOBJ)
+	gcc $(CFLAGS) $(OBJ) $(AOBJ) -o $(NAME)
 
 clean:
 	rm -f $(OBJ) $(AOBJ)
