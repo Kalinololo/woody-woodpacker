@@ -11,7 +11,7 @@
 #include <sys/mman.h>
 #include <elf.h>
 
-#define KEY_SIZE 16
+#define KEY_SIZE 8
 #define PAYLOAD "src/payload"
 
 typedef struct s_woody
@@ -37,5 +37,10 @@ int			check_elf(char *c);
 Elf64_Shdr	*get_elf_section(char *file, char *seg);
 Elf64_Phdr	*get_load_segment(woody *w, int *space);
 void        ft_memcpy(void *dst, void *src, int size);
+int         get_load(woody *w);
+void        patch(woody *w);
+void        ft_memset(void *dst, int value, int size);
+void        enlarge_load_size(woody *w);
+
 
 #endif

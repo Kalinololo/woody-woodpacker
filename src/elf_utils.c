@@ -55,3 +55,18 @@ int check_elf(char *c)
         return (0);
     return (1);
 }
+
+int    get_load(woody *w)
+{
+    int     space = 0;
+    w->load_index = 0;
+    w->load = get_load_segment(w, &space);
+    if (w->load == NULL)
+        error("Wrong ELF format.");
+    if (space)
+        return (0);
+    write(1, "1", 1);
+    enlarge_load_size(w);
+    parse_elf(w);
+    return (1 + get_load(w));
+}

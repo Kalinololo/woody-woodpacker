@@ -17,3 +17,26 @@ char    *map_file(char *file, size_t *size)
     *size = s;
     return map;
 }
+
+void    ft_memcpy(void *dst, void *src, int size)
+{
+    int i = 0;
+    char *d = (char *) dst;
+    char *s = (char *) src;
+    while (i < size)
+    {
+        *(d + i) = s[i];
+        i++;
+    }
+}
+
+void    ft_memset(void *dst, int value, int size)
+{
+    int i = 0;
+    char *d = (char *) dst;
+    while (i < size)
+    {
+        *(d + i) = value;
+        i++;
+    }
+}

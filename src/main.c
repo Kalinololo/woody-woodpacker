@@ -19,25 +19,6 @@ void create_new(woody w)
         munmap(w.file, w.size);
 }
 
-
-void patch(woody *w)
-{
-    char *f = w->p->file + w->p->text->sh_offset;
-    int key_offset = 88;
-    int addr_offset = 96;
-    int size_offset = 104;
-
-    ft_memcpy(f + key_offset, w->key, KEY_SIZE);
-    ft_memcpy(f + addr_offset, &w->text->sh_addr, sizeof(Elf64_Addr));
-    ft_memcpy(f + size_offset, &w->text->sh_size, sizeof(uint64_t));
-    long unsigned int i = 0;
-    while (i < w->text->sh_size)
-    {
-        printf("index : %ld value --> char : %c  int : %d  hexa : %X\n", i, *(f + i), *(f + i), *(f + i));
-        i++;
-    }
-}
-
 int main(int ac, char **av)
 {
     if (ac != 2)
@@ -50,6 +31,7 @@ int main(int ac, char **av)
     w.p->file = map_file(PAYLOAD, &w.p->size);
     parse_elf(w.p);
     encryption(&w);
+    w.new = get_load(&w);
     patch(&w);
     inject(&w);
     create_new(w);

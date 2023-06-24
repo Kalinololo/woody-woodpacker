@@ -1,26 +1,37 @@
- #include "wooody.h"
+#include "wooody.h"
 
-void    ft_memcpy(void *dst, void *src, int size)
+void patch(woody *w)
 {
-    int i = 0;
-    char *d = (char *) dst;
-    char *s = (char *) src;
-    while (i < size)
+    int e = (int) w->header->e_entry;
+    char *f = w->p->file + w->p->text->sh_offset;
+    int key_offset = 31;
+    int addr_offset = 41;
+    int size_offset = 51;
+    int entry_offset = 81;
+    uint64_t text = w->text->sh_addr;
+    long unsigned int i = 0;
+    while (i < w->p->text->sh_size)
     {
-        *(d + i) = s[i];
+        printf("index : %ld value --> char : %c  int : %d  hexa : %X\n", i, *(f + i), *(f + i), *(f + i));
         i++;
     }
+
+    ft_memcpy(f + key_offset, w->key, KEY_SIZE);
+    ft_memcpy(f + addr_offset, &text, sizeof(uint64_t));
+    ft_memcpy(f + size_offset, &w->text->sh_size, sizeof(uint64_t));
+    ft_memcpy(f + entry_offset, &e, sizeof(int));
 }
 
-void    ft_memset(void *dst, int value, int size)
+void   inject(woody *w)
 {
-    int i = 0;
-    char *d = (char *) dst;
-    while (i < size)
-    {
-        *(d + i) = value;
-        i++;
-    }
+    w->psize = w->p->text->sh_size;
+    Elf64_Off injection_offset = (w->load->p_offset + w->load->p_filesz);
+
+    ft_memcpy(w->file + injection_offset, w->p->file + w->p->text->sh_offset, w->psize);
+    w->header->e_entry = (w->load->p_vaddr + w->load->p_filesz);
+    w->load->p_filesz += w->psize;
+    w->load->p_memsz += w->psize;
+    w->load->p_flags |= PF_W;
 }
 
 void    enlarge_load_size(woody *w)
@@ -54,31 +65,4 @@ void    enlarge_load_size(woody *w)
     munmap(w->file, w->size);
     w->file = new;
     w->size += s;
-}
-
-int    check_space(woody *w)
-{
-    int     space = 0;
-    w->load_index = 0;
-    w->load = get_load_segment(w, &space);
-    if (w->load == NULL)
-        error("Wrong ELF format.");
-    if (space)
-        return (0);
-    write(1, "1", 1);
-    enlarge_load_size(w);
-    parse_elf(w);
-    return (1 + check_space(w));
-}
-
-void   inject(woody *w)
-{
-    w->psize = w->p->text->sh_size;
-    w->new = check_space(w);
-    Elf64_Off injection_offset = (w->load->p_offset + w->load->p_filesz);
-
-    ft_memcpy(w->file + injection_offset, w->p->file + w->p->text->sh_offset, w->psize);
-    w->header->e_entry = (w->load->p_vaddr + w->load->p_filesz);
-    w->load->p_filesz += w->psize;
-    w->load->p_memsz += w->psize;
 }
