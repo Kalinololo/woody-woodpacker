@@ -1,6 +1,6 @@
 section .text
 
-_begin:
+start:
         push rax
         push rdx
         push rcx

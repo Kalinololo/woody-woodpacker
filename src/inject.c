@@ -8,16 +8,15 @@ void patch(woody *w)
     int addr_offset = 41;
     int size_offset = 51;
     int entry_offset = 81;
-    uint64_t text = w->text->sh_addr;
-    long unsigned int i = 0;
+    /*long unsigned int i = 0;
     while (i < w->p->text->sh_size)
     {
         printf("index : %ld value --> char : %c  int : %d  hexa : %X\n", i, *(f + i), *(f + i), *(f + i));
         i++;
-    }
+    }*/
 
     ft_memcpy(f + key_offset, w->key, KEY_SIZE);
-    ft_memcpy(f + addr_offset, &text, sizeof(uint64_t));
+    ft_memcpy(f + addr_offset, &w->text->sh_addr, sizeof(uint64_t));
     ft_memcpy(f + size_offset, &w->text->sh_size, sizeof(uint64_t));
     ft_memcpy(f + entry_offset, &e, sizeof(int));
 }
@@ -31,7 +30,7 @@ void   inject(woody *w)
     w->header->e_entry = (w->load->p_vaddr + w->load->p_filesz);
     w->load->p_filesz += w->psize;
     w->load->p_memsz += w->psize;
-    w->load->p_flags |= PF_W;
+    //w->load->p_flags |= PF_W;
 }
 
 void    enlarge_load_size(woody *w)
