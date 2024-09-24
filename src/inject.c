@@ -4,6 +4,7 @@ void patch(woody *w)
 {
     int e = (int) w->header->e_entry;
     char *f = w->p->file + w->p->text->sh_offset;
+    // Offsets correspondant a la position des differentes clé dans le payload en asm
     int key_offset = 31;
     int addr_offset = 41;
     int size_offset = 51;
@@ -32,6 +33,9 @@ void   inject(woody *w)
     w->load->p_memsz += w->psize;
     //w->load->p_flags |= PF_W;
 }
+
+// Fonction pas testée et peut-etre pas necessaire
+// En theorie, c'est pour augmenter la taille de la section si jamais il y en a pas assez de base
 
 void    enlarge_load_size(woody *w)
 {
