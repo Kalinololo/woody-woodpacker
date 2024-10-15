@@ -7,27 +7,31 @@ start:
         push rdi
         push rsi
 
-print_woody:
-        mov rax, 1
-        mov rdi, 1
-        lea rsi, [rel woody]
-        mov rdx, woody_len
-        syscall
-
-init:        
-        mov rdx, 0xCCCCCCCCCCCCCCCC
+init:
+        call print_woody
+        lea rdx, [rel key]
         mov rax, 0xAAAAAAAAAAAAAAAA
         mov rcx, 0xBBBBBBBBBBBBBBBB
         add rcx, rax
 
+reset:
+        xor r8, r8
+
 decrypt:
-        xor BYTE [rax], dl
-        ror rdx, 1
+        mov al, BYTE [rax]
+        call print_woody
+        mov al, BYTE [rdx + r8]
+        xor BYTE [rax], al
+        inc r8
         inc rax
         cmp rax, rcx
-        jnz decrypt
+        je entry
+        cmp r8, key_size
+        je reset
+        jmp decrypt
 
 entry:
+        call print_woody
         pop rsi    
         pop rdi
         pop rcx
@@ -35,7 +39,24 @@ entry:
         pop rax
         jmp 0xDDDDDDDD
 
+print_woody:
+        push rax
+        push rdi
+        push rsi
+        push rdx
+        mov rax, 1
+        mov rdi, 1
+        lea rsi, [rel woody]
+        mov rdx, woody_len
+        syscall
+        pop rdx
+        pop rsi
+        pop rdi
+        pop rax
+        ret
+
 woody:           db '....WOODY....',0x0a,0
 woody_len:       equ $ - woody
 
-end:
+key:            db 'CCCCCCCC',0
+key_size:       equ $ - key

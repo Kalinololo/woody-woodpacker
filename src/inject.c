@@ -2,24 +2,24 @@
 
 void patch(woody *w)
 {
+    int new_entry = (w->load->p_vaddr + w->load->p_filesz);
     int e = (int) w->header->e_entry;
+
+    int key_offset = 138;
+    int addr_offset = 19;
+    int size_offset = 29;
+    int entry_offset = 86;
+
+    uint64_t load = w->text->sh_offset;
+    uint64_t size = w->text->sh_size;
+
+    int entrypoint = e - (new_entry + 1 + sizeof(int));
     char *f = w->p->file + w->p->text->sh_offset;
-    // Offsets correspondant a la position des differentes clé dans le payload en asm
-    int key_offset = 31;
-    int addr_offset = 41;
-    int size_offset = 51;
-    int entry_offset = 81;
-    /*long unsigned int i = 0;
-    while (i < w->p->text->sh_size)
-    {
-        printf("index : %ld value --> char : %c  int : %d  hexa : %X\n", i, *(f + i), *(f + i), *(f + i));
-        i++;
-    }*/
 
     ft_memcpy(f + key_offset, w->key, KEY_SIZE);
-    ft_memcpy(f + addr_offset, &w->text->sh_addr, sizeof(uint64_t));
-    ft_memcpy(f + size_offset, &w->text->sh_size, sizeof(uint64_t));
-    ft_memcpy(f + entry_offset, &e, sizeof(int));
+    ft_memcpy(f + addr_offset, &load, sizeof(uint64_t));
+    ft_memcpy(f + size_offset, &size, sizeof(uint64_t));
+    ft_memcpy(f + entry_offset, &entrypoint, sizeof(int));
 }
 
 void   inject(woody *w)
@@ -31,7 +31,8 @@ void   inject(woody *w)
     w->header->e_entry = (w->load->p_vaddr + w->load->p_filesz);
     w->load->p_filesz += w->psize;
     w->load->p_memsz += w->psize;
-    //w->load->p_flags |= PF_W;
+    w->load->p_flags |= PF_W;
+    w->load->p_flags |= PF_X;
 }
 
 // Fonction pas testée et peut-etre pas necessaire
