@@ -10,11 +10,18 @@ void patch(woody *w)
     int size_offset = 29;
     int entry_offset = 86;
 
-    uint64_t load = w->load->p_vaddr + (w->text->sh_offset - w->load->p_offset);
+    uint64_t load = w->text->sh_offset;
     uint64_t size = w->text->sh_size;
 
     int entrypoint = e - (new_entry + 1 + sizeof(int));
     char *f = w->p->file + w->p->text->sh_offset;
+
+    long unsigned int i = 0;
+    while (i < w->p->text->sh_size)
+    {
+        printf("index : %ld value --> char : %c  int : %d  hexa : %X\n", i, *(f + i), *(f + i), *(f + i));
+        i++;
+    }
 
     ft_memcpy(f + key_offset, w->key, KEY_SIZE);
     ft_memcpy(f + addr_offset, &load, sizeof(uint64_t));
