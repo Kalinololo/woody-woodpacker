@@ -10,7 +10,7 @@ void patch(woody *w)
     int size_offset = 29;
     int entry_offset = 86;
 
-    uint64_t load = w->text->sh_offset;
+    uint64_t load = w->load->p_vaddr + (w->text->sh_offset - w->load->p_offset);
     uint64_t size = w->text->sh_size;
 
     int entrypoint = e - (new_entry + 1 + sizeof(int));
