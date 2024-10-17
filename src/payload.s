@@ -8,36 +8,32 @@ start:
         push rsi
 
 init:
-        call print_woody
-        lea rdx, [rel key]
-        mov rax, 0xAAAAAAAAAAAAAAAA
-        mov rcx, 0xBBBBBBBBBBBBBBBB
-        add rcx, rax
+        lea rdi, [rel key]
+        lea rdx, [rel 0xAAAAAAAA] ; patch later to text section address
+        mov rax, 0xBBBBBBBBBBBBBBBB ; patch later to text section end address
 
 reset:
         xor r8, r8
 
 decrypt:
-        mov al, BYTE [rax]
+        mov al, BYTE [rdi + r8]
+        xor [rdx], al
         call print_woody
-        mov al, BYTE [rdx + r8]
-        xor BYTE [rax], al
         inc r8
-        inc rax
-        cmp rax, rcx
+        inc rdx
+        cmp rdx, rax
         je entry
-        cmp r8, key_size
+        cmp r8, 8
         je reset
         jmp decrypt
 
 entry:
-        call print_woody
         pop rsi    
         pop rdi
         pop rcx
         pop rdx
         pop rax
-        jmp 0xDDDDDDDD
+        jmp 0xDDDDDDDD ; patch later to base entrypoint
 
 print_woody:
         push rax
@@ -58,5 +54,5 @@ print_woody:
 woody:           db '....WOODY....',0x0a,0
 woody_len:       equ $ - woody
 
-key:            db 'CCCCCCCC',0
+key:            db 'CCCCCCCC',0 ; patch later to key value
 key_size:       equ $ - key

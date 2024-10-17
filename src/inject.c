@@ -5,12 +5,12 @@ void patch(woody *w)
     int new_entry = (w->load->p_vaddr + w->load->p_filesz);
     int e = (int) w->header->e_entry;
 
-    int key_offset = 138;
-    int addr_offset = 19;
-    int size_offset = 29;
-    int entry_offset = 86;
+    int addr_offset = 16;
+    int size_offset = 22;
+    int entry_offset = 68;
+    int key_offset = 120;
 
-    uint64_t load = w->text->sh_offset;
+    int32_t load = w->load->p_vaddr + (w->text->sh_offset - w->load->p_offset);
     uint64_t size = w->text->sh_size;
 
     int entrypoint = e - (new_entry + 1 + sizeof(int));
@@ -24,7 +24,7 @@ void patch(woody *w)
     }
 
     ft_memcpy(f + key_offset, w->key, KEY_SIZE);
-    ft_memcpy(f + addr_offset, &load, sizeof(uint64_t));
+    ft_memcpy(f + addr_offset, &load, sizeof(int32_t));
     ft_memcpy(f + size_offset, &size, sizeof(uint64_t));
     ft_memcpy(f + entry_offset, &entrypoint, sizeof(int));
 }
@@ -38,8 +38,8 @@ void   inject(woody *w)
     w->header->e_entry = (w->load->p_vaddr + w->load->p_filesz);
     w->load->p_filesz += w->psize;
     w->load->p_memsz += w->psize;
-    w->load->p_flags |= PF_W;
-    w->load->p_flags |= PF_X;
+    //w->load->p_flags |= PF_W;
+    //w->load->p_flags |= PF_X;
 }
 
 // Fonction pas testée et peut-etre pas necessaire

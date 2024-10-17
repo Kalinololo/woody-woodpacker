@@ -36,7 +36,9 @@ Elf64_Phdr   *get_load_segment(woody *w, int *space)
     if (check_load_seg(header, first, i) || check_load_seg(header, first + 1, i + 1))
         return (NULL);
     w->load_index = i;
-    if (seg[i + 1].p_offset - (seg[i].p_offset + seg[i].p_filesz) >= w->psize)
+    uint64_t size = w->p->text->sh_size;
+    uint64_t space_size = seg[i + 1].p_offset - (seg[i].p_offset + seg[i].p_filesz);
+    if (space_size >= size)
         *space = 1;
     return first;
 }
