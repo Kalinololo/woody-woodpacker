@@ -2,6 +2,8 @@
     "files.associations": {
         "*.tsx": "typescriptreact",
         "stdio.h": "c",
-        "syscall.h": "c"
+        "syscall.h": "c",
+        "compare": "c",
+        "cstdint": "c"
     }
 }

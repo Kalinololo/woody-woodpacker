@@ -41,12 +41,12 @@ void patch(woody *w)
 
     char *f = w->p->file + w->p->text->sh_offset;
 
-    long unsigned int i = 0;
+    /*long unsigned int i = 0;
     while (i < w->p->text->sh_size)
     {
         printf("index : %ld value --> char : %c  int : %d  hexa : %X\n", i, *(f + i), *(f + i), *(f + i));
         i++;
-    }
+    }*/
 
     ft_memcpy(f + size_offset, &size_end, sizeof(uint64_t));
     ft_memcpy(f + addr_off, &addr, sizeof(uint64_t));

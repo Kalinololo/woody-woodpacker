@@ -8,7 +8,6 @@ rip:
         sub rdx, rip - init
         sub rdx, [rel addr]
         mov rsi, rdx
-        jmp rsi
         mov rdx, [rel size]    
         lea rdi, [rel key]
         xor rcx, rcx
@@ -29,6 +28,7 @@ decrypt:
 
 entry:
         call print_woody
+        jmp rsi
 
 print_woody:
         push rsi
