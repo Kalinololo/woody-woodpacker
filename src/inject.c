@@ -1,17 +1,17 @@
 #include "wooody.h"
 
-void patch(woody *w)
+/*void patch(woody *w)
 {
     int new_entry = (w->load->p_vaddr + w->load->p_filesz);
     int e = (int) w->header->e_entry;
 
-    int addr_offset = 16;
-    int size_offset = 22;
-    int entry_offset = 68;
-    int key_offset = 120;
+    int entry_offset = 69;
+    int key_offset = 113;
+    int addr_offset = 122;
+    int size_offset = 130;
 
-    int32_t load = w->load->p_vaddr + (w->text->sh_offset - w->load->p_offset);
-    uint64_t size = w->text->sh_size;
+    uint64_t size = ((w->load->p_offset + w->load->p_filesz) - w->text->sh_offset);
+    uint64_t size_end = (size + w->text->sh_size);
 
     int entrypoint = e - (new_entry + 1 + sizeof(int));
     char *f = w->p->file + w->p->text->sh_offset;
@@ -23,10 +23,34 @@ void patch(woody *w)
         i++;
     }
 
-    ft_memcpy(f + key_offset, w->key, KEY_SIZE);
-    ft_memcpy(f + addr_offset, &load, sizeof(int32_t));
-    ft_memcpy(f + size_offset, &size, sizeof(uint64_t));
     ft_memcpy(f + entry_offset, &entrypoint, sizeof(int));
+    ft_memcpy(f + key_offset, w->key, KEY_SIZE);
+    ft_memcpy(f + addr_offset, &size, sizeof(uint64_t));
+    ft_memcpy(f + size_offset, &size_end, sizeof(uint64_t));
+}*/
+
+void patch(woody *w)
+{
+
+    int size_offset = 123;
+    int addr_off = 115;
+    int key_offset = 131;
+
+    uint64_t addr = ((w->load->p_offset + w->load->p_filesz) - w->text->sh_offset);
+    uint64_t size_end = (w->text->sh_size);
+
+    char *f = w->p->file + w->p->text->sh_offset;
+
+    long unsigned int i = 0;
+    while (i < w->p->text->sh_size)
+    {
+        printf("index : %ld value --> char : %c  int : %d  hexa : %X\n", i, *(f + i), *(f + i), *(f + i));
+        i++;
+    }
+
+    ft_memcpy(f + size_offset, &size_end, sizeof(uint64_t));
+    ft_memcpy(f + addr_off, &addr, sizeof(uint64_t));
+    ft_memcpy(f + key_offset, w->key, KEY_SIZE);
 }
 
 void   inject(woody *w)
@@ -38,8 +62,8 @@ void   inject(woody *w)
     w->header->e_entry = (w->load->p_vaddr + w->load->p_filesz);
     w->load->p_filesz += w->psize;
     w->load->p_memsz += w->psize;
-    //w->load->p_flags |= PF_W;
-    //w->load->p_flags |= PF_X;
+    w->load->p_flags |= PF_W;
+    w->load->p_flags |= PF_X;
 }
 
 // Fonction pas testée et peut-etre pas necessaire

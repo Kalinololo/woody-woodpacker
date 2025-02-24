@@ -32,6 +32,7 @@ void    encryption(woody *w)
     {
         if (!*key)
             key = w->key;
+        write(1, w->file + w->text->sh_offset + i, 1);
         *(w->file + w->text->sh_offset + i) ^= *(key++);
         i++;
     }
