@@ -13,10 +13,10 @@ void create_new(woody w)
         error(strerror(errno));
     if (write(new, w.file, w.size) == -1)
         error(strerror(errno));
-    if (w.new)
+    /*if (w.new)
         free(w.file);
     else
-        munmap(w.file, w.size);
+        munmap(w.file, w.size);*/
 }
 
 int main(int ac, char **av)

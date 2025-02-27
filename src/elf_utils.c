@@ -36,7 +36,9 @@ Elf64_Phdr   *get_load_segment(woody *w, int *space)
     if (check_load_seg(header, first, i) || check_load_seg(header, first + 1, i + 1))
         return (NULL);
     w->load_index = i;
-    if (seg[i + 1].p_offset - (seg[i].p_offset + seg[i].p_filesz) >= w->psize)
+    uint64_t size = w->p->text->sh_size;
+    uint64_t space_size = seg[i + 1].p_offset - (seg[i].p_offset + seg[i].p_filesz);
+    if (space_size >= size)
         *space = 1;
     return first;
 }
@@ -47,7 +49,6 @@ void parse_elf(woody* w)
         error("File architecture not suported. x86_64 only");
     w->header = (Elf64_Ehdr *) w->file;
     w->text = get_elf_section(w->file, ".text");
-    //w->text->sh_flags |= SHF_WRITE;
 }
 
 int check_elf(char *c)
