@@ -7,7 +7,8 @@ rip:
         pop rdx
         sub rdx, rip - init
         sub rdx, [rel addr]
-        mov rax, [rel size]
+        mov rsi, rdx
+        mov rdx, [rel size]
         lea rdi, [rel key]
         xor rcx, rcx
 
@@ -16,10 +17,10 @@ reset:
 
 decrypt:
         mov al, BYTE [rdi + r8]
-        xor [rdx + rcx], al
+        xor [rsi + rcx], al
         inc r8
         inc rcx
-        cmp rcx, rax
+        cmp rcx, rdx
         je entry
         cmp r8, 8
         je reset
@@ -27,21 +28,23 @@ decrypt:
 
 entry:
         call print_woody
-        jmp 0xDDDDDDDD
+        jmp rsi
 
 print_woody:
+        push rsi
         mov rax, 1
         mov rdi, 1
         lea rsi, [rel woody]
         mov rdx, woody_len
         syscall
+        pop rsi
         ret
 
 woody:           db '....WOODY....',0x0a,0
 woody_len:       equ $ - woody
 
-key:             db 'CCCCCCCC',0
-key_size:        equ $ - key
-
 addr:            dq 0xA
 size:            dq 0xB
+
+key:             db 'CCCCCCCC',0
+key_size:        equ $ - key

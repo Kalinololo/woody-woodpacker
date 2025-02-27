@@ -49,7 +49,6 @@ void parse_elf(woody* w)
         error("File architecture not suported. x86_64 only");
     w->header = (Elf64_Ehdr *) w->file;
     w->text = get_elf_section(w->file, ".text");
-    //w->text->sh_flags |= SHF_WRITE;
 }
 
 int check_elf(char *c)
